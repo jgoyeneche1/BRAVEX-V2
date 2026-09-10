@@ -188,7 +188,7 @@
       // vez (evita que el teléfono/iOS se quede sirviendo una copia
       // vieja cacheada del iframe cuando se publica una versión nueva en
       // Apps Script).
-      var url = "https://script.google.com/macros/s/AKfycbyOWcOqJAw81qy_TP9f4QYT4_mCVSGKpir2LX3Eq8yqifK5l05vqDXgWZjfXgzhWcEJ/exec" + Date.now();
+      var url = "https://script.google.com/macros/s/AKfycbyOWcOqJAw81qy_TP9f4QYT4_mCVSGKpir2LX3Eq8yqifK5l05vqDXgWZjfXgzhWcEJ/exec?inicio=1&_v=" + Date.now();
       var sesion = leerSesionGuardada_();
       if (sesion && sesion.nombre && sesion.pin) {
         url += "&u=" + encodeURIComponent(sesion.nombre) + "&p=" + encodeURIComponent(sesion.pin);
