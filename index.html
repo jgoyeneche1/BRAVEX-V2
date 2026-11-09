@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Copa Bravex (V2)</title>
 
-  <!-- Control de caché estricto para que siempre cargue la versión más reciente -->
+  <!-- Control de caché estricto para garantizar siempre la última versión -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
@@ -38,7 +38,7 @@
       background-color: #05150f;
     }
 
-    /* Iframe de la app a pantalla completa (detrás de la pantalla de la bola) */
+    /* Iframe de la app a pantalla completa (detrás de la bola, oculto hasta que el menú esté listo) */
     #appFrame {
       position: fixed;
       inset: 0;
@@ -46,7 +46,7 @@
       height: 100%;
       height: 100dvh;
       border: none;
-      z-index: 5;
+      z-index: 10;
       background-color: #05150f;
       background-image:
         radial-gradient(ellipse at 50% 15%, rgba(15, 49, 37, 0.3) 0%, rgba(2, 8, 6, 0.6) 100%),
@@ -60,6 +60,15 @@
       background-attachment: fixed;
       background-repeat: repeat;
       background-size: cover, auto;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    #appFrame.activo {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
     }
 
     /* Imagen real de la bola de golf en el fondo con el escudo */
@@ -72,13 +81,9 @@
       height: 100dvh;
       object-fit: cover;
       object-position: center;
-      z-index: 10;
+      z-index: 20;
       pointer-events: none;
-      transition: opacity 0.4s ease;
-    }
-    .bg-ball.oculto {
-      opacity: 0;
-      visibility: hidden;
+      transition: opacity 0.45s ease;
     }
 
     /* Pantalla inicial de bienvenida sobre la bola de golf */
@@ -91,14 +96,8 @@
       justify-content: space-between;
       padding: 26px 18px 34px;
       text-align: center;
-      z-index: 20;
-      transition: opacity 0.4s ease;
-    }
-
-    #bienvenida.oculto {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
+      z-index: 30;
+      transition: opacity 0.45s ease;
     }
 
     .frase {
@@ -160,7 +159,7 @@
       cursor: pointer;
       font-family: inherit;
       transition: all 0.25s ease;
-      min-width: 170px;
+      min-width: 175px;
     }
 
     .boton:active {
@@ -227,6 +226,7 @@
     var bgBall = document.getElementById("bgBall");
     var btnIniciar = document.getElementById("btnIniciar");
 
+    var iframeDescargado = false;
     var appListaEnIframe = false;
     var usuarioHizoClic = false;
     var transicionEjecutada = false;
@@ -235,9 +235,10 @@
     window.addEventListener("message", function (ev) {
       var d = ev.data;
       if (!d || typeof d !== "object") return;
+
+      // Señal enviada por Google Apps Script cuando el menú principal ya está 100% dibujado
       if (d.tipo === "bravex_app_lista") {
         appListaEnIframe = true;
-        // Si el usuario ya pulsó Iniciar, transición inmediata sin pantalla intermedia
         if (usuarioHizoClic && !transicionEjecutada) {
           desvanecerYEvevelarMenu();
         }
@@ -248,9 +249,22 @@
       }
     });
 
+    // Cuando el iframe termina su descarga básica
+    frame.addEventListener("load", function () {
+      iframeDescargado = true;
+      // Si a los 600ms de descargar el iframe no ha llegado el mensaje (fallback de red),
+      // consideramos que el menú ya se dibujó
+      setTimeout(function () {
+        appListaEnIframe = true;
+        if (usuarioHizoClic && !transicionEjecutada) {
+          desvanecerYEvevelarMenu();
+        }
+      }, 600);
+    });
+
     // Evitar que arrastres táctiles en la bienvenida desplacen la ventana
     document.addEventListener("touchmove", function (e) {
-      if (bienvenida && !bienvenida.classList.contains("oculto")) {
+      if (bienvenida && bienvenida.style.display !== "none") {
         e.preventDefault();
       }
     }, { passive: false });
@@ -261,7 +275,7 @@
       if (document.documentElement) document.documentElement.scrollTop = 0;
     }
 
-    // Desvanecer la pantalla de la bola y revelar directamente el menú principal
+    // Desvanecer suavemente la pantalla de la bola y revelar directamente el menú principal
     function desvanecerYEvevelarMenu() {
       if (transicionEjecutada) return;
       transicionEjecutada = true;
@@ -269,10 +283,12 @@
       btnIniciar.textContent = "¡Listo!";
       resetearScrollWrapper_();
 
-      // La pantalla de la bola y la bienvenida se desvanecen suavemente,
-      // dejando ver de inmediato el menú principal que ya está dibujado en el iframe detrás
-      bienvenida.classList.add("oculto");
-      bgBall.classList.add("oculto");
+      // 1. Activar el iframe detrás de la bola (donde el menú ya está visible)
+      frame.classList.add("activo");
+
+      // 2. Desvanecer la pantalla de la bola de golf y la bienvenida en 0.45s
+      bienvenida.style.opacity = "0";
+      bgBall.style.opacity = "0";
 
       try {
         if (frame.contentWindow) {
@@ -284,22 +300,22 @@
         bienvenida.style.display = "none";
         bgBall.style.display = "none";
         resetearScrollWrapper_();
-      }, 420);
+      }, 480);
     }
 
-    // Al pulsar Iniciar
+    // Al pulsar Iniciar: no hay pantallas intermedias. Todo ocurre en la pantalla de la bola.
     btnIniciar.addEventListener("click", function () {
       if (usuarioHizoClic) return;
       usuarioHizoClic = true;
       resetearScrollWrapper_();
 
-      // Si la app dentro del iframe ya avisó que el menú está listo, entra de inmediato (0 ms)
+      // Si el menú en el iframe ya avisó que está listo, desvanece de inmediato (0 ms)
       if (appListaEnIframe) {
         desvanecerYEvevelarMenu();
         return;
       }
 
-      // Si aún está preparando datos en segundo plano, el botón muestra los estados en la misma pantalla de la bola
+      // Si aún está preparando datos, el botón cambia de texto en la misma pantalla de la bola
       btnIniciar.classList.add("cargando");
       btnIniciar.textContent = "Cargando...";
 
@@ -315,7 +331,7 @@
         }
       }, 1500);
 
-      // Verificador continuo: tan pronto llegue la señal bravex_app_lista, desvanece la bola y entra al menú
+      // Verificador continuo: tan pronto la app avise que el menú está listo, desvanece y entra
       var checkInterval = setInterval(function () {
         if (appListaEnIframe) {
           clearInterval(checkInterval);
@@ -323,11 +339,11 @@
         }
       }, 50);
 
-      // Respaldo de seguridad (por si se pierde la conexión): entra a los 3.5s
+      // Respaldo de seguridad final (por si se pierde la conexión a internet): entra a los 3.8s
       setTimeout(function () {
         clearInterval(checkInterval);
         desvanecerYEvevelarMenu();
-      }, 3500);
+      }, 3800);
     });
 
     // 🚀 PRECARGA EN SEGUNDO PLANO INMEDIATA:
