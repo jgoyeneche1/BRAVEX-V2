@@ -364,17 +364,6 @@
       history.scrollRestoration = 'manual';
     }
 
-    // Escuchar mensajes desde el iframe para guardar o borrar credenciales
-    window.addEventListener("message", function (ev) {
-      var d = ev.data;
-      if (!d || typeof d !== "object") return;
-      if (d.tipo === "bravex_guardar_sesion" && d.nombre && d.pin) {
-        try { localStorage.setItem(LS_SESION_, JSON.stringify({ nombre: d.nombre, pin: d.pin })); } catch (e) {}
-      } else if (d.tipo === "bravex_borrar_sesion") {
-        try { localStorage.removeItem(LS_SESION_); } catch (e) {}
-      }
-    });
-
     var frame = document.getElementById("appFrame");
     var bienvenida = document.getElementById("bienvenida");
     var bgBall = document.getElementById("bgBall");
@@ -387,8 +376,25 @@
     var step3 = document.getElementById("step3");
 
     var iframeListo = false;
+    var appListaEnIframe = false;
     var usuarioHizoClic = false;
     var animacionCompletada = false;
+
+    // Escuchar mensajes desde el iframe (incluyendo cuando el menú ya está listo)
+    window.addEventListener("message", function (ev) {
+      var d = ev.data;
+      if (!d || typeof d !== "object") return;
+      if (d.tipo === "bravex_app_lista") {
+        appListaEnIframe = true;
+        if (usuarioHizoClic && !animacionCompletada) {
+          finalizarCargaYEntrar();
+        }
+      } else if (d.tipo === "bravex_guardar_sesion" && d.nombre && d.pin) {
+        try { localStorage.setItem(LS_SESION_, JSON.stringify({ nombre: d.nombre, pin: d.pin })); } catch (e) {}
+      } else if (d.tipo === "bravex_borrar_sesion") {
+        try { localStorage.removeItem(LS_SESION_); } catch (e) {}
+      }
+    });
 
     // Evitar que arrastres o gestos táctiles en la bienvenida desplacen la ventana
     document.addEventListener("touchmove", function (e) {
@@ -403,25 +409,6 @@
       if (document.documentElement) document.documentElement.scrollTop = 0;
     }
 
-    function pasarDirectoAlMenu() {
-      resetearScrollWrapper_();
-      cargandoScreen.classList.remove("activo");
-      frame.classList.add("activo");
-      try {
-        if (frame.contentWindow) {
-          frame.contentWindow.postMessage({ tipo: "bravex_reset_scroll" }, "*");
-        }
-      } catch (e) {}
-      setTimeout(function () {
-        resetearScrollWrapper_();
-        try { if (frame.contentWindow) frame.contentWindow.postMessage({ tipo: "bravex_reset_scroll" }, "*"); } catch (e) {}
-      }, 50);
-      setTimeout(function () {
-        resetearScrollWrapper_();
-        try { if (frame.contentWindow) frame.contentWindow.postMessage({ tipo: "bravex_reset_scroll" }, "*"); } catch (e) {}
-      }, 150);
-    }
-
     // Progreso interactivo de la línea de tiempo
     function iniciarLineaDeTiempo() {
       // Ocultar bienvenida y mostrar pantalla de progreso con franjas de fairway
@@ -429,54 +416,77 @@
       bgBall.classList.add("oculto");
       cargandoScreen.classList.add("activo");
 
-      // Paso 1: Conectando (35%)
+      // Paso 1: Conexión con el servidor (35%)
       timelineBar.style.width = "35%";
       cargandoSub.textContent = "Conectando con el servidor...";
       step1.classList.add("active");
 
-      // Paso 2: Modalidades y datos (75%) tras 350ms
+      // Paso 2: Carga de modalidades y datos (75%)
       setTimeout(function () {
-        timelineBar.style.width = "75%";
-        cargandoSub.textContent = "Cargando modalidades y datos...";
-        step2.classList.add("active");
-      }, 350);
+        if (!animacionCompletada) {
+          timelineBar.style.width = "75%";
+          cargandoSub.textContent = "Cargando modalidades y datos...";
+          step2.classList.add("active");
+        }
+      }, 400);
 
-      // Verificador: Cuando el iframe esté listo o tras un tiempo breve
+      // Si la app en el iframe ya avisó que el menú está listo (por precarga en segundo plano)
+      if (appListaEnIframe) {
+        setTimeout(finalizarCargaYEntrar, 300);
+        return;
+      }
+
+      // Verificador continuo: tan pronto la app avise que el menú está listo, entra de inmediato
       var checkInterval = setInterval(function () {
-        if (iframeListo) {
+        if (appListaEnIframe) {
           clearInterval(checkInterval);
           finalizarCargaYEntrar();
         }
-      }, 100);
+      }, 70);
 
-      // Respaldo de seguridad: si tarda más de 1.8s, entra directo
+      // Respaldo de seguridad (por si se pierde la conexión): entra a los 3.2s
       setTimeout(function () {
         clearInterval(checkInterval);
         finalizarCargaYEntrar();
-      }, 1800);
+      }, 3200);
     }
 
+    // Transición fluida directa al menú: se desvanece la carga y aparece el menú ya listo
     function finalizarCargaYEntrar() {
       if (animacionCompletada) return;
       animacionCompletada = true;
 
-      // Paso 3: Completado (100%)
+      // Paso 3: Completado al 100%
       timelineBar.style.width = "100%";
       cargandoSub.textContent = "¡Todo listo! Entrando al menú...";
       step3.classList.add("active");
 
-      // Transición fluida directamente al menú de la app
+      // 1. Mostrar el iframe justo debajo de la tarjeta de carga (el menú ya está dibujado en él)
+      frame.classList.add("activo");
+      resetearScrollWrapper_();
+      try {
+        if (frame.contentWindow) {
+          frame.contentWindow.postMessage({ tipo: "bravex_reset_scroll" }, "*");
+        }
+      } catch (e) {}
+
+      // 2. Desvanecer la pantalla de carga suavemente para revelar el menú directamente
       setTimeout(function () {
-        pasarDirectoAlMenu();
-      }, 250);
+        cargandoScreen.style.transition = "opacity 0.35s ease, transform 0.35s ease";
+        cargandoScreen.style.opacity = "0";
+        cargandoScreen.style.transform = "scale(1.02)";
+
+        setTimeout(function () {
+          cargandoScreen.classList.remove("activo");
+          cargandoScreen.style.display = "none";
+          resetearScrollWrapper_();
+        }, 360);
+      }, 220);
     }
 
-    // Cuando el iframe termina de cargar en segundo plano
+    // Registro de carga inicial del iframe
     frame.addEventListener("load", function () {
       iframeListo = true;
-      if (usuarioHizoClic && !animacionCompletada) {
-        finalizarCargaYEntrar();
-      }
     });
 
     // Al pulsar Iniciar: inicia la línea de tiempo y entra directo al menú
@@ -492,7 +502,7 @@
     // el iframe ya conecta y compila Google Apps Script por detrás sin hacerle esperar.
     (function precargarAppEnSegundoPlano() {
       var baseUrl = "https://script.google.com/macros/s/AKfycbzgTnFlxzrhvIwxH-_b4EOvdH42-0n2cOnv5mRxMiUtVZwlFt4N_8GPPtyRTRLyCU9j/exec";
-      var vTag = "189_" + Math.floor(Date.now() / 3600000);
+      var vTag = "300_" + Math.floor(Date.now() / 3600000);
       var url = baseUrl + "?inicio=1&_v=" + vTag;
 
       var sesion = leerSesionGuardada_();
