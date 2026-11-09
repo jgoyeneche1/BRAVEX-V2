@@ -160,6 +160,7 @@
       letter-spacing: 1px;
       cursor: wait;
       box-shadow: 0 0 18px rgba(100, 201, 133, 0.45);
+      min-width: 230px;
     }
   </style>
 </head>
@@ -216,6 +217,23 @@
     var usuarioHizoClic = false;
     var transicionEjecutada = false;
     var instanteClic = 0;
+    var dotsInterval = null;
+
+    function iniciarAnimacionPuntosMenu_() {
+      if (dotsInterval) clearInterval(dotsInterval);
+      var numPuntos = 1;
+      btnIniciar.textContent = "Preparando menú.";
+      dotsInterval = setInterval(function () {
+        if (transicionEjecutada) {
+          clearInterval(dotsInterval);
+          dotsInterval = null;
+          return;
+        }
+        numPuntos = (numPuntos % 3) + 1;
+        var puntos = numPuntos === 1 ? "." : (numPuntos === 2 ? ".." : "...");
+        btnIniciar.textContent = "Preparando menú" + puntos;
+      }, 320);
+    }
 
     // Escuchar mensajes reales enviados desde Index.html dentro del iframe
     window.addEventListener("message", function (ev) {
@@ -251,6 +269,11 @@
     function desvanecerYEvevelarMenu() {
       if (transicionEjecutada) return;
       transicionEjecutada = true;
+
+      if (dotsInterval) {
+        clearInterval(dotsInterval);
+        dotsInterval = null;
+      }
 
       btnIniciar.textContent = "¡Listo!";
       resetearScrollWrapper_();
@@ -288,14 +311,14 @@
       btnIniciar.textContent = "Conectando...";
 
       // Si el menú ya se había precargado en segundo plano mientras veía la bola,
-      // mostramos una secuencia rápida de estados en el botón (0.6s) y abrimos el menú
+      // mostramos una secuencia rápida con actividad de puntos (. / .. / ...) y abrimos el menú
       if (appListaEnIframe) {
         setTimeout(function () {
-          if (!transicionEjecutada) btnIniciar.textContent = "Cargando menú...";
-        }, 260);
+          if (!transicionEjecutada) iniciarAnimacionPuntosMenu_();
+        }, 250);
         setTimeout(function () {
           desvanecerYEvevelarMenu();
-        }, 560);
+        }, 1150);
         return;
       }
 
@@ -304,17 +327,17 @@
         if (!transicionEjecutada) {
           btnIniciar.textContent = "Cargando datos...";
         }
-      }, 550);
+      }, 450);
 
       setTimeout(function () {
         if (!transicionEjecutada) {
-          btnIniciar.textContent = "Preparando menú...";
+          iniciarAnimacionPuntosMenu_();
         }
-      }, 1300);
+      }, 900);
 
-      // Verificador continuo: espera a que el menú esté pintado (y al menos 560ms para ver el cambio de estado)
+      // Verificador continuo: espera a que el menú esté pintado y se haya visto el ciclo de puntos
       var checkInterval = setInterval(function () {
-        if (appListaEnIframe && (Date.now() - instanteClic >= 560)) {
+        if (appListaEnIframe && (Date.now() - instanteClic >= 1700)) {
           clearInterval(checkInterval);
           desvanecerYEvevelarMenu();
         }
@@ -332,7 +355,7 @@
     // el iframe ya conecta y compila Google Apps Script por detrás sin hacerle esperar.
     (function precargarAppEnSegundoPlano() {
       var baseUrl = "https://script.google.com/macros/s/AKfycbzgTnFlxzrhvIwxH-_b4EOvdH42-0n2cOnv5mRxMiUtVZwlFt4N_8GPPtyRTRLyCU9j/exec";
-      var vTag = "301_" + Math.floor(Date.now() / 3600000);
+      var vTag = "302_" + Math.floor(Date.now() / 3600000);
       var url = baseUrl + "?inicio=1&_v=" + vTag;
 
       var sesion = leerSesionGuardada_();
