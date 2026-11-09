@@ -160,7 +160,10 @@
       letter-spacing: 1px;
       cursor: wait;
       box-shadow: 0 0 18px rgba(100, 201, 133, 0.45);
-      min-width: 230px;
+      width: 245px;
+      padding: 14px 12px;
+      white-space: nowrap;
+      transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     }
   </style>
 </head>
@@ -222,7 +225,7 @@
     function iniciarAnimacionPuntosMenu_() {
       if (dotsInterval) clearInterval(dotsInterval);
       var numPuntos = 1;
-      btnIniciar.textContent = "Preparando menú.";
+      btnIniciar.innerHTML = 'Preparando menú<span>.</span><span id="pDot2" style="visibility:hidden">.</span><span id="pDot3" style="visibility:hidden">.</span>';
       dotsInterval = setInterval(function () {
         if (transicionEjecutada) {
           clearInterval(dotsInterval);
@@ -230,9 +233,11 @@
           return;
         }
         numPuntos = (numPuntos % 3) + 1;
-        var puntos = numPuntos === 1 ? "." : (numPuntos === 2 ? ".." : "...");
-        btnIniciar.textContent = "Preparando menú" + puntos;
-      }, 320);
+        var d2 = document.getElementById("pDot2");
+        var d3 = document.getElementById("pDot3");
+        if (d2) d2.style.visibility = (numPuntos >= 2) ? "visible" : "hidden";
+        if (d3) d3.style.visibility = (numPuntos >= 3) ? "visible" : "hidden";
+      }, 350);
     }
 
     // Escuchar mensajes reales enviados desde Index.html dentro del iframe
