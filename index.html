@@ -140,12 +140,15 @@
       font-size: 13px;
       letter-spacing: 2px;
       text-transform: uppercase;
-      padding: 14px 42px;
+      padding: 14px 12px;
       border-radius: 999px;
       cursor: pointer;
       font-family: inherit;
-      transition: all 0.25s ease;
-      min-width: 175px;
+      transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      width: 250px;
+      min-width: 250px;
+      max-width: 250px;
+      white-space: nowrap;
     }
 
     .boton:active {
@@ -160,10 +163,11 @@
       letter-spacing: 1px;
       cursor: wait;
       box-shadow: 0 0 18px rgba(100, 201, 133, 0.45);
-      width: 245px;
+      width: 250px;
+      min-width: 250px;
+      max-width: 250px;
       padding: 14px 12px;
       white-space: nowrap;
-      transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     }
   </style>
 </head>
@@ -225,7 +229,7 @@
     function iniciarAnimacionPuntosMenu_() {
       if (dotsInterval) clearInterval(dotsInterval);
       var numPuntos = 1;
-      btnIniciar.innerHTML = 'Preparando menú<span>.</span><span id="pDot2" style="visibility:hidden">.</span><span id="pDot3" style="visibility:hidden">.</span>';
+      btnIniciar.innerHTML = '<span style="display:inline-block; width:178px; text-align:left;">Preparando menú.<span id="pDot2" style="opacity:0">.</span><span id="pDot3" style="opacity:0">.</span></span>';
       dotsInterval = setInterval(function () {
         if (transicionEjecutada) {
           clearInterval(dotsInterval);
@@ -235,8 +239,8 @@
         numPuntos = (numPuntos % 3) + 1;
         var d2 = document.getElementById("pDot2");
         var d3 = document.getElementById("pDot3");
-        if (d2) d2.style.visibility = (numPuntos >= 2) ? "visible" : "hidden";
-        if (d3) d3.style.visibility = (numPuntos >= 3) ? "visible" : "hidden";
+        if (d2) d2.style.opacity = (numPuntos >= 2) ? "1" : "0";
+        if (d3) d3.style.opacity = (numPuntos >= 3) ? "1" : "0";
       }, 350);
     }
 
