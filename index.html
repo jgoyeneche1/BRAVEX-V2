@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="color-scheme" content="dark" />
   <meta name="theme-color" content="#05150f" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Copa Bravex (V2)</title>
 
   <!-- PWA Manifest (garantiza background_color oscuro al abrir el icono en iOS y Android) -->
@@ -23,7 +23,7 @@
 
   <!-- Configuración PWA / WebClip para iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="apple-mobile-web-app-title" content="Bravex V2" />
   <meta name="mobile-web-app-capable" content="yes" />
 
@@ -98,7 +98,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      padding: 26px 18px 34px;
+      padding: max(28px, env(safe-area-inset-top, 28px)) 18px max(34px, env(safe-area-inset-bottom, 34px));
       text-align: center;
       z-index: 30;
       transition: opacity 0.45s ease;
@@ -381,7 +381,7 @@
     // el iframe ya conecta y compila Google Apps Script por detrás sin hacerle esperar.
     (function precargarAppEnSegundoPlano() {
       var baseUrl = "https://script.google.com/macros/s/AKfycbzgTnFlxzrhvIwxH-_b4EOvdH42-0n2cOnv5mRxMiUtVZwlFt4N_8GPPtyRTRLyCU9j/exec";
-      var vTag = "323_" + Math.floor(Date.now() / 3600000);
+      var vTag = "324_" + Math.floor(Date.now() / 3600000);
       var url = baseUrl + "?inicio=1&_v=" + vTag;
 
       var sesion = leerSesionGuardada_();
