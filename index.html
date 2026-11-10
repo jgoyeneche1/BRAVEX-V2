@@ -1,9 +1,14 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color:#05150f;background:#05150f;color:#ffffff;">
+<html lang="es" style="background-color:#05150f !important;background:#05150f !important;color:#ffffff !important;">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#05150f" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Copa Bravex (V2)</title>
+
+  <!-- PWA Manifest (garantiza background_color oscuro al abrir el icono en iOS y Android) -->
+  <link rel="manifest" href="manifest.json" />
 
   <!-- Control de caché estricto para garantizar siempre la última versión -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -16,18 +21,25 @@
   <link rel="dns-prefetch" href="https://script.google.com" />
   <link rel="dns-prefetch" href="https://script.googleusercontent.com" />
 
-  <!-- Icono real para "Añadir a pantalla de inicio" en iOS -->
-  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/jgoyeneche1/bravex_assets/main/apple-touch-icon.png" />
-
+  <!-- Configuración PWA / WebClip para iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Bravex V2" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="theme-color" content="#05150f" />
-  <meta name="color-scheme" content="dark" />
-  <link rel="apple-touch-startup-image" href="https://raw.githubusercontent.com/jgoyeneche1/bravex_assets/main/apple-touch-icon.png" />
+
+  <!-- Icono real para "Añadir a pantalla de inicio" en iOS -->
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="apple-touch-icon.png" />
+
+  <!-- Lienzo inicial oscuro SVG para neutralizar el fondo blanco de arranque nativo de iOS WebKit -->
+  <link rel="apple-touch-startup-image" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'><rect width='100%25' height='100%25' fill='%2305150f'/></svg>" />
 
   <style>
+    :root {
+      color-scheme: dark;
+      background-color: #05150f !important;
+      background: #05150f !important;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
       position: fixed;
@@ -37,7 +49,9 @@
       width: 100%;
       overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #05150f;
+      background-color: #05150f !important;
+      background: #05150f !important;
+      color: #ffffff !important;
     }
 
     /* Iframe de la app a pantalla completa (detrás de la bola, listo para revelarse cuando el menú esté pintado) */
@@ -367,7 +381,7 @@
     // el iframe ya conecta y compila Google Apps Script por detrás sin hacerle esperar.
     (function precargarAppEnSegundoPlano() {
       var baseUrl = "https://script.google.com/macros/s/AKfycbzgTnFlxzrhvIwxH-_b4EOvdH42-0n2cOnv5mRxMiUtVZwlFt4N_8GPPtyRTRLyCU9j/exec";
-      var vTag = "302_" + Math.floor(Date.now() / 3600000);
+      var vTag = "323_" + Math.floor(Date.now() / 3600000);
       var url = baseUrl + "?inicio=1&_v=" + vTag;
 
       var sesion = leerSesionGuardada_();
