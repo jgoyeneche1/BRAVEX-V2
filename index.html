@@ -10,8 +10,8 @@
   <!-- PWA Manifest (garantiza background_color oscuro al abrir el icono en iOS y Android) -->
   <link rel="manifest" href="manifest.json" />
 
-  <!-- Control de caché estricto para garantizar siempre la última versión -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <!-- Control de caché para garantizar siempre la última versión sin destruir el lienzo nativo -->
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
@@ -31,8 +31,8 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="icon" type="image/png" href="apple-touch-icon.png" />
 
-  <!-- Lienzo inicial oscuro SVG para neutralizar el fondo blanco de arranque nativo de iOS WebKit -->
-  <link rel="apple-touch-startup-image" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'><rect width='100%25' height='100%25' fill='%2305150f'/></svg>" />
+  <!-- Startup image compatible con iOS WebKit (PNG real para neutralizar el fondo blanco nativo) -->
+  <link rel="apple-touch-startup-image" href="apple-touch-icon.png" />
 
   <style>
     :root {
@@ -200,7 +200,7 @@
     <div class="frase">“La competitividad característica fundamental de cualquier Bravo y jamás deberá anteponerse al disfrute, buen ambiente y buen humor de la partida.”</div>
 
     <div class="bienvenida-wrap">
-      <div class="badge-v2">Versión 2.3.6</div>
+      <div class="badge-v2">Versión 2.3.7</div>
       <div class="sub">Bienvenido a la Bravex Cup</div>
       <button class="boton" id="btnIniciar">Iniciar</button>
     </div>
@@ -268,9 +268,10 @@
 
       // Señal enviada cuando el menú principal ya está visible y pintado dentro de Index.html
       if (d.tipo === "bravex_menu_pintado" || d.tipo === "bravex_app_lista") {
-        setTimeout(function () {
-          appListaEnIframe = true;
-        }, 80);
+        appListaEnIframe = true;
+        if (usuarioHizoClic && !transicionEjecutada) {
+          desvanecerYEvevelarMenu();
+        }
       } else if (d.tipo === "bravex_guardar_sesion" && d.nombre && d.pin) {
         try { localStorage.setItem(LS_SESION_, JSON.stringify({ nombre: d.nombre, pin: d.pin })); } catch (e) {}
       } else if (d.tipo === "bravex_borrar_sesion") {
@@ -304,26 +305,24 @@
       btnIniciar.textContent = "¡Listo!";
       resetearScrollWrapper_();
 
+      // 1. Habilitar interacción con el menú que ya está dibujado debajo
+      frame.classList.add("activo");
+
+      // 2. Desvanecer la pantalla de la bola de golf y la bienvenida hacia el menú principal
+      bienvenida.style.opacity = "0";
+      bgBall.style.opacity = "0";
+
+      try {
+        if (frame.contentWindow) {
+          frame.contentWindow.postMessage({ tipo: "bravex_reset_scroll" }, "*");
+        }
+      } catch (e) {}
+
       setTimeout(function () {
-        // 1. Habilitar interacción con el menú que ya está dibujado debajo
-        frame.classList.add("activo");
-
-        // 2. Desvanecer la pantalla de la bola de golf y la bienvenida hacia el menú principal
-        bienvenida.style.opacity = "0";
-        bgBall.style.opacity = "0";
-
-        try {
-          if (frame.contentWindow) {
-            frame.contentWindow.postMessage({ tipo: "bravex_reset_scroll" }, "*");
-          }
-        } catch (e) {}
-
-        setTimeout(function () {
-          bienvenida.style.display = "none";
-          bgBall.style.display = "none";
-          resetearScrollWrapper_();
-        }, 450);
-      }, 150);
+        bienvenida.style.display = "none";
+        bgBall.style.display = "none";
+        resetearScrollWrapper_();
+      }, 400);
     }
 
     // Al pulsar Iniciar: muestra progresión de estados en el botón sobre la bola y al finalizar abre el menú
@@ -334,46 +333,40 @@
       resetearScrollWrapper_();
 
       btnIniciar.classList.add("cargando");
-      btnIniciar.textContent = "Conectando...";
 
       // Si el menú ya se había precargado en segundo plano mientras veía la bola,
-      // mostramos una secuencia rápida con actividad de puntos (. / .. / ...) y abrimos el menú
+      // abrimos de inmediato con una confirmación ultrarrápida
       if (appListaEnIframe) {
-        setTimeout(function () {
-          if (!transicionEjecutada) iniciarAnimacionPuntosMenu_();
-        }, 250);
+        btnIniciar.textContent = "Abriendo...";
         setTimeout(function () {
           desvanecerYEvevelarMenu();
-        }, 1150);
+        }, 180);
         return;
       }
 
-      // Si aún está terminando de cargar, mostramos los cambios de estado reales en el botón
-      setTimeout(function () {
-        if (!transicionEjecutada) {
-          btnIniciar.textContent = "Cargando datos...";
-        }
-      }, 450);
-
+      // Si aún está precargando en segundo plano, animar el botón sobre la bola
+      btnIniciar.textContent = "Conectando...";
       setTimeout(function () {
         if (!transicionEjecutada) {
           iniciarAnimacionPuntosMenu_();
         }
-      }, 900);
+      }, 350);
 
-      // Verificador continuo: espera a que el menú esté pintado y se haya visto el ciclo de puntos
+      // Verificador continuo: tan pronto como el menú esté listo en el iframe, abrir
       var checkInterval = setInterval(function () {
-        if (appListaEnIframe && (Date.now() - instanteClic >= 1700)) {
+        if (appListaEnIframe) {
           clearInterval(checkInterval);
           desvanecerYEvevelarMenu();
         }
-      }, 50);
+      }, 60);
 
       // Respaldo de seguridad final (solo si falla postMessage o la red es muy lenta)
       setTimeout(function () {
         clearInterval(checkInterval);
-        desvanecerYEvevelarMenu();
-      }, 9500);
+        if (!transicionEjecutada) {
+          desvanecerYEvevelarMenu();
+        }
+      }, 7500);
     });
 
     // 🚀 PRECARGA EN SEGUNDO PLANO INMEDIATA:
@@ -381,7 +374,7 @@
     // el iframe ya conecta y compila Google Apps Script por detrás sin hacerle esperar.
     (function precargarAppEnSegundoPlano() {
       var baseUrl = "https://script.google.com/macros/s/AKfycbzgTnFlxzrhvIwxH-_b4EOvdH42-0n2cOnv5mRxMiUtVZwlFt4N_8GPPtyRTRLyCU9j/exec";
-      var vTag = "325_" + Math.floor(Date.now() / 3600000);
+      var vTag = "326_" + Math.floor(Date.now() / 3600000);
       var url = baseUrl + "?inicio=1&_v=" + vTag;
 
       var sesion = leerSesionGuardada_();
