@@ -186,6 +186,126 @@
       padding: 14px 12px;
       white-space: nowrap;
     }
+
+    /* Overlay del Referee Oficial R&A / USGA por Voz */
+    #refereeOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: none;
+      flex-direction: column;
+      background: rgba(4, 18, 14, 0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: env(safe-area-inset-top, 12px) 12px env(safe-area-inset-bottom, 14px);
+    }
+    .ref-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 4px 12px;
+      border-bottom: 1px solid rgba(100, 201, 133, 0.25);
+      flex-shrink: 0;
+    }
+    .ref-title-main {
+      font-size: 16px;
+      font-weight: 900;
+      color: #ffd04a;
+      letter-spacing: 0.4px;
+    }
+    .ref-ctx-pill {
+      font-size: 11px;
+      font-weight: 700;
+      color: #6ee7b7;
+      margin-top: 2px;
+    }
+    .ref-btn-volver {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 7px 12px;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .ref-body {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 14px 2px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .ref-card {
+      background: linear-gradient(180deg, rgba(11, 41, 31, 0.95) 0%, rgba(6, 26, 20, 0.98) 100%);
+      border: 1.5px solid rgba(16, 185, 129, 0.4);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+    .ref-quick-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 10px;
+    }
+    .ref-quick-chip {
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid rgba(16, 185, 129, 0.42);
+      color: #a7f3d0;
+      border-radius: 999px;
+      padding: 6px 11px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .ref-footer {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(100, 201, 133, 0.22);
+    }
+    .ref-btn-mic {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 15px 16px;
+      font-size: 16px;
+      font-weight: 900;
+      color: #042f2e;
+      background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .ref-btn-mic.grabando {
+      color: #ffffff;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.28), 0 6px 20px rgba(220, 38, 38, 0.45);
+      animation: refPulse 1.2s infinite;
+    }
+    .ref-btn-mic.ocupado {
+      background: #334155;
+      color: #cbd5e1;
+      cursor: wait;
+      box-shadow: none;
+    }
+    @keyframes refPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.985); }
+      100% { transform: scale(1); }
+    }
   </style>
 </head>
 <body style="background-color:#05150f;background:#05150f;color:#ffffff;margin:0;padding:0;">
@@ -203,6 +323,46 @@
       <div class="badge-v2">Versión 2.3.7</div>
       <div class="sub">Bienvenido a la Bravex Cup</div>
       <button class="boton" id="btnIniciar">Iniciar</button>
+    </div>
+  </div>
+
+  <!-- Overlay transparente del Referee Oficial R&A / USGA por Voz -->
+  <div id="refereeOverlay">
+    <div class="ref-header">
+      <div style="min-width:0;">
+        <div class="ref-title-main">⚖️ REFEREE R&amp;A / USGA</div>
+        <div id="refCtxPill" class="ref-ctx-pill">Consulta Oficial de Reglas</div>
+      </div>
+      <button type="button" class="ref-btn-volver" onclick="cerrarRefereeWrapper_()">← Volver</button>
+    </div>
+
+    <div class="ref-body" id="refBody">
+      <div class="ref-card" id="refWelcomeCard">
+        <div style="font-size:15px; font-weight:800; color:#ffffff; line-height:1.4;">
+          Toca el botón verde de abajo y describe la situación en el campo.
+        </div>
+        <div style="font-size:12.5px; color:#94a3b8; margin-top:6px; line-height:1.45;">
+          El Referee aplicará el <b>Reglamento Oficial R&amp;A / USGA</b> adaptado a tu modalidad en juego y te responderá por voz y texto.
+        </div>
+        <div class="ref-quick-grid">
+          <button type="button" class="ref-quick-chip" onclick="enviarTextoRefereeWrapper_('Mi bola cayó en área de penalización roja, ¿cómo tomo alivio?')">🔴 Estaca roja</button>
+          <button type="button" class="ref-quick-chip" onclick="enviarTextoRefereeWrapper_('Quiero declarar mi bola injugable, ¿qué opciones tengo?')">🌲 Bola injugable</button>
+          <button type="button" class="ref-quick-chip" onclick="enviarTextoRefereeWrapper_('Mi bola está en camino de grava o aspersor, ¿tengo alivio sin penalidad?')">🛣️ Camino / Aspersor</button>
+          <button type="button" class="ref-quick-chip" onclick="enviarTextoRefereeWrapper_('Se movió mi bola accidentalmente en el green al marcarla')">⛳ Bola movida en green</button>
+        </div>
+      </div>
+      <div id="refRespuestaWrap"></div>
+    </div>
+
+    <div class="ref-footer">
+      <button type="button" id="refBtnMic" class="ref-btn-mic" onclick="alternarMicrofonoRefereeWrapper_()">
+        <span id="refBtnMicIcon">🎙️</span>
+        <span id="refBtnMicTxt">Tocar para hablar</span>
+      </button>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="refInputTexto" placeholder="O escribe aquí tu duda..." onkeydown="if(event.key==='Enter') enviarTextoRefereeDesdeInput_();" style="flex:1; background:rgba(15, 49, 37, 0.75); border:1.5px solid rgba(100,201,133,0.45); border-radius:10px; padding:10px 12px; color:#ffffff; font-size:13.5px; outline:none;" />
+        <button type="button" onclick="enviarTextoRefereeDesdeInput_()" style="background:rgba(255,255,255,0.12); border:1px solid rgba(100,201,133,0.5); color:#6ee7b7; border-radius:10px; padding:10px 14px; font-weight:800; font-size:13px; cursor:pointer;">Enviar</button>
+      </div>
     </div>
   </div>
 
@@ -261,17 +421,35 @@
       }, 350);
     }
 
+    var refSourceWin_ = null;
+
+    function notificarCapacidadesWrapper_(destinoWin) {
+      var msg = { tipo: "bravex_wrapper_capabilities", micWrapper: true };
+      try { if (destinoWin && typeof destinoWin.postMessage === "function") destinoWin.postMessage(msg, "*"); } catch (e) {}
+      try { if (frame && frame.contentWindow) frame.contentWindow.postMessage(msg, "*"); } catch (e) {}
+    }
+
     // Escuchar mensajes reales enviados desde Index.html dentro del iframe
     window.addEventListener("message", function (ev) {
       var d = ev.data;
       if (!d || typeof d !== "object") return;
+      if (ev.source && ev.source !== window) {
+        refSourceWin_ = ev.source;
+      }
 
       // Señal enviada cuando el menú principal ya está visible y pintado dentro de Index.html
       if (d.tipo === "bravex_menu_pintado" || d.tipo === "bravex_app_lista") {
         appListaEnIframe = true;
+        notificarCapacidadesWrapper_(ev.source);
         if (usuarioHizoClic && !transicionEjecutada) {
           desvanecerYEvevelarMenu();
         }
+      } else if (d.tipo === "bravex_ping_wrapper") {
+        notificarCapacidadesWrapper_(ev.source);
+      } else if (d.tipo === "bravex_abrir_referee") {
+        abrirRefereeWrapper_(d.contexto || {});
+      } else if (d.tipo === "bravex_referee_respuesta") {
+        manejarRespuestaRefereeWrapper_(d.reqId, d.resultado);
       } else if (d.tipo === "bravex_guardar_sesion" && d.nombre && d.pin) {
         try { localStorage.setItem(LS_SESION_, JSON.stringify({ nombre: d.nombre, pin: d.pin })); } catch (e) {}
       } else if (d.tipo === "bravex_borrar_sesion") {
@@ -374,7 +552,7 @@
     // el iframe ya conecta y compila Google Apps Script por detrás sin hacerle esperar.
     (function precargarAppEnSegundoPlano() {
       var baseUrl = "https://script.google.com/macros/s/AKfycbzgTnFlxzrhvIwxH-_b4EOvdH42-0n2cOnv5mRxMiUtVZwlFt4N_8GPPtyRTRLyCU9j/exec";
-      var vTag = "326_" + Math.floor(Date.now() / 3600000);
+      var vTag = "338_" + Math.floor(Date.now() / 3600000);
       var url = baseUrl + "?inicio=1&_v=" + vTag;
 
       var sesion = leerSesionGuardada_();
@@ -388,6 +566,407 @@
 
       frame.src = url;
     })();
+
+    // =========================================================
+    // REFEREE OFICIAL R&A / USGA POR VOZ (NIVEL SUPERIOR PWA)
+    // =========================================================
+    var refEstado_ = {
+      contexto: {},
+      historial: [],
+      grabando: false,
+      ocupado: false,
+      stream: null,
+      recorder: null,
+      chunks: [],
+      timerInt: null,
+      segundos: 0,
+      reqCounter: 0,
+      reqActivoId: 0,
+      ultimoTextoVoz: ""
+    };
+
+    function escRefHtml_(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function desbloquearTTSiOS_() {
+      try {
+        if (window.speechSynthesis && typeof SpeechSynthesisUtterance !== "undefined") {
+          window.speechSynthesis.cancel();
+          var sil = new SpeechSynthesisUtterance(" ");
+          sil.volume = 0;
+          sil.lang = "es-ES";
+          window.speechSynthesis.speak(sil);
+        }
+      } catch (e) {}
+    }
+
+    function hablarTextoRefereeWrapper_(texto) {
+      if (!texto || !window.speechSynthesis || typeof SpeechSynthesisUtterance === "undefined") return;
+      try {
+        window.speechSynthesis.cancel();
+        var u = new SpeechSynthesisUtterance(String(texto));
+        u.lang = "es-ES";
+        u.rate = 1.02;
+        var voces = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
+        if (Array.isArray(voces) && voces.length > 0) {
+          var vEs = voces.find(function(v) { return /^es[-_]ES/i.test(v.lang) && v.localService; }) ||
+                    voces.find(function(v) { return /^es/i.test(v.lang) && v.localService; }) ||
+                    voces.find(function(v) { return /^es/i.test(v.lang); });
+          if (vEs) u.voice = vEs;
+        }
+        window.speechSynthesis.speak(u);
+      } catch (e) {}
+    }
+
+    function actualizarBotonMicReferee_() {
+      var btn = document.getElementById("refBtnMic");
+      var icn = document.getElementById("refBtnMicIcon");
+      var txt = document.getElementById("refBtnMicTxt");
+      if (!btn || !icn || !txt) return;
+
+      btn.classList.remove("grabando", "ocupado");
+      btn.disabled = false;
+
+      if (refEstado_.ocupado) {
+        btn.classList.add("ocupado");
+        btn.disabled = true;
+        icn.textContent = "⏳";
+        txt.textContent = "Consultando Reglas R&A...";
+      } else if (refEstado_.grabando) {
+        btn.classList.add("grabando");
+        icn.textContent = "⏹️";
+        var s = refEstado_.segundos;
+        txt.textContent = "Grabando (0:" + (s < 10 ? "0" + s : s) + ") · Tocar para enviar";
+      } else {
+        icn.textContent = "🎙️";
+        txt.textContent = "Tocar para hablar";
+      }
+    }
+
+    function detenerGrabacionSilenciosa_() {
+      if (refEstado_.timerInt) {
+        clearInterval(refEstado_.timerInt);
+        refEstado_.timerInt = null;
+      }
+      try {
+        if (refEstado_.recorder && refEstado_.recorder.state !== "inactive") {
+          refEstado_.recorder.onstop = null;
+          refEstado_.recorder.stop();
+        }
+      } catch (e) {}
+      try {
+        if (refEstado_.stream) {
+          refEstado_.stream.getTracks().forEach(function(t) { t.stop(); });
+        }
+      } catch (e) {}
+      refEstado_.grabando = false;
+      refEstado_.recorder = null;
+      refEstado_.stream = null;
+      refEstado_.chunks = [];
+    }
+
+    function abrirRefereeWrapper_(ctx) {
+      detenerGrabacionSilenciosa_();
+      try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+      refEstado_.contexto = ctx || {};
+      refEstado_.ocupado = false;
+      refEstado_.historial = [];
+
+      var pill = document.getElementById("refCtxPill");
+      if (pill) {
+        var partes = [ctx.modalidad || "Consulta Oficial R&A / USGA"];
+        if (ctx.campo) partes.push(ctx.campo);
+        if (ctx.hoyo) partes.push("Hoyo " + ctx.hoyo + (ctx.par ? " · Par " + ctx.par : ""));
+        pill.textContent = partes.join(" · ");
+      }
+
+      var wCard = document.getElementById("refWelcomeCard");
+      if (wCard) wCard.style.display = "block";
+      var rWrap = document.getElementById("refRespuestaWrap");
+      if (rWrap) rWrap.innerHTML = "";
+
+      actualizarBotonMicReferee_();
+      var ov = document.getElementById("refereeOverlay");
+      if (ov) ov.style.display = "flex";
+    }
+
+    function cerrarRefereeWrapper_() {
+      detenerGrabacionSilenciosa_();
+      try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+      refEstado_.ocupado = false;
+      var ov = document.getElementById("refereeOverlay");
+      if (ov) ov.style.display = "none";
+    }
+
+    function seleccionarMimeRecorder_() {
+      if (typeof MediaRecorder === "undefined" || typeof MediaRecorder.isTypeSupported !== "function") return "";
+      var prefs = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm", "audio/aac"];
+      for (var i = 0; i < prefs.length; i++) {
+        if (MediaRecorder.isTypeSupported(prefs[i])) return prefs[i];
+      }
+      return "";
+    }
+
+    async function alternarMicrofonoRefereeWrapper_() {
+      if (refEstado_.ocupado) return;
+
+      if (refEstado_.grabando) {
+        // Usuario termina de hablar: desbloquear TTS en iOS dentro del gesto síncrono
+        desbloquearTTSiOS_();
+        finalizarYEnviarAudioReferee_();
+        return;
+      }
+
+      try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        mostrarErrorRefereeWrapper_("Tu navegador no soporta captura de audio aquí. Puedes escribir tu duda abajo.");
+        return;
+      }
+
+      try {
+        var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (typeof MediaRecorder === "undefined") {
+          stream.getTracks().forEach(function(t) { t.stop(); });
+          mostrarErrorRefereeWrapper_("MediaRecorder no disponible en este dispositivo. Usa el cuadro de texto inferior.");
+          return;
+        }
+
+        var mimePref = seleccionarMimeRecorder_();
+        var opts = mimePref ? { mimeType: mimePref } : undefined;
+        var rec = opts ? new MediaRecorder(stream, opts) : new MediaRecorder(stream);
+
+        refEstado_.stream = stream;
+        refEstado_.recorder = rec;
+        refEstado_.chunks = [];
+        refEstado_.segundos = 0;
+        refEstado_.grabando = true;
+
+        rec.ondataavailable = function(ev) {
+          if (ev.data && ev.data.size > 0) refEstado_.chunks.push(ev.data);
+        };
+
+        rec.start();
+        actualizarBotonMicReferee_();
+
+        refEstado_.timerInt = setInterval(function() {
+          refEstado_.segundos++;
+          actualizarBotonMicReferee_();
+          if (refEstado_.segundos >= 25 && refEstado_.grabando) {
+            finalizarYEnviarAudioReferee_();
+          }
+        }, 1000);
+      } catch (err) {
+        var msgErr = (err && err.name === "NotAllowedError")
+          ? "Permiso de micrófono denegado. Actívalo en Ajustes de Safari para este sitio o escribe tu duda abajo."
+          : ("No se pudo abrir el micrófono: " + (err && err.message ? err.message : String(err)));
+        mostrarErrorRefereeWrapper_(msgErr);
+      }
+    }
+
+    function finalizarYEnviarAudioReferee_() {
+      if (!refEstado_.grabando || !refEstado_.recorder) return;
+      if (refEstado_.timerInt) {
+        clearInterval(refEstado_.timerInt);
+        refEstado_.timerInt = null;
+      }
+
+      var rec = refEstado_.recorder;
+      var stream = refEstado_.stream;
+      refEstado_.grabando = false;
+      refEstado_.ocupado = true;
+      actualizarBotonMicReferee_();
+
+      rec.onstop = function() {
+        try { if (stream) stream.getTracks().forEach(function(t) { t.stop(); }); } catch (e) {}
+        refEstado_.stream = null;
+        refEstado_.recorder = null;
+
+        var chunks = refEstado_.chunks || [];
+        refEstado_.chunks = [];
+
+        if (!chunks.length) {
+          refEstado_.ocupado = false;
+          actualizarBotonMicReferee_();
+          mostrarErrorRefereeWrapper_("No se capturó sonido. Intenta hablar un momento más largo.");
+          return;
+        }
+
+        var mimeReal = rec.mimeType || "audio/mp4";
+        var blob = new Blob(chunks, { type: mimeReal });
+        if (blob.size < 300) {
+          refEstado_.ocupado = false;
+          actualizarBotonMicReferee_();
+          mostrarErrorRefereeWrapper_("Audio demasiado corto. Vuelve a intentarlo.");
+          return;
+        }
+
+        var reader = new FileReader();
+        reader.onloadend = function() {
+          var dataUrl = String(reader.result || "");
+          var b64 = dataUrl.indexOf(",") !== -1 ? dataUrl.split(",")[1] : dataUrl;
+          enviarPayloadAlBackendReferee_({
+            audioBase64: b64,
+            audioMime: mimeReal,
+            historial: refEstado_.historial.slice(-4),
+            contexto: refEstado_.contexto
+          });
+        };
+        reader.readAsDataURL(blob);
+      };
+
+      try {
+        if (rec.state !== "inactive") rec.stop();
+      } catch (e) {
+        refEstado_.ocupado = false;
+        actualizarBotonMicReferee_();
+      }
+    }
+
+    function enviarTextoRefereeDesdeInput_() {
+      var inp = document.getElementById("refInputTexto");
+      var txt = String(inp ? inp.value : "").trim();
+      if (!txt) return;
+      if (inp) inp.value = "";
+      enviarTextoRefereeWrapper_(txt);
+    }
+
+    function enviarTextoRefereeWrapper_(texto) {
+      if (refEstado_.ocupado) return;
+      detenerGrabacionSilenciosa_();
+      desbloquearTTSiOS_();
+      refEstado_.ocupado = true;
+      actualizarBotonMicReferee_();
+      enviarPayloadAlBackendReferee_({
+        texto: String(texto || "").trim(),
+        historial: refEstado_.historial.slice(-4),
+        contexto: refEstado_.contexto
+      });
+    }
+
+    function enviarPayloadAlBackendReferee_(payload) {
+      var wCard = document.getElementById("refWelcomeCard");
+      if (wCard) wCard.style.display = "none";
+
+      var rWrap = document.getElementById("refRespuestaWrap");
+      if (rWrap) {
+        rWrap.innerHTML = '<div class="ref-card" style="text-align:center; padding:22px 14px;">' +
+          '<div style="font-size:26px; margin-bottom:8px;">⚖️</div>' +
+          '<div style="font-size:14px; font-weight:800; color:#6ee7b7;">Consultando Reglamento Oficial R&amp;A / USGA...</div>' +
+          '</div>';
+      }
+
+      refEstado_.reqCounter++;
+      var reqId = refEstado_.reqCounter;
+      refEstado_.reqActivoId = reqId;
+
+      var destino = refSourceWin_ || (frame && frame.contentWindow);
+      if (!destino) {
+        refEstado_.ocupado = false;
+        actualizarBotonMicReferee_();
+        mostrarErrorRefereeWrapper_("La aplicación aún está conectando. Espera un segundo e inténtalo de nuevo.");
+        return;
+      }
+
+      try {
+        destino.postMessage({
+          tipo: "bravex_referee_consulta",
+          reqId: reqId,
+          payload: payload
+        }, "*");
+      } catch (e) {
+        refEstado_.ocupado = false;
+        actualizarBotonMicReferee_();
+        mostrarErrorRefereeWrapper_("No se pudo comunicar con el servidor de la app.");
+      }
+
+      // Timeout de seguridad por si falla la conexión en el campo
+      setTimeout(function() {
+        if (refEstado_.ocupado && refEstado_.reqActivoId === reqId) {
+          refEstado_.ocupado = false;
+          actualizarBotonMicReferee_();
+          mostrarErrorRefereeWrapper_("Tiempo de espera agotado. Comprueba tu señal móvil e inténtalo de nuevo.");
+        }
+      }, 25000);
+    }
+
+    function manejarRespuestaRefereeWrapper_(reqId, res) {
+      if (reqId && refEstado_.reqActivoId && reqId !== refEstado_.reqActivoId) return;
+      refEstado_.ocupado = false;
+      actualizarBotonMicReferee_();
+
+      if (!res || !res.ok) {
+        mostrarErrorRefereeWrapper_((res && res.mensaje) || "No se pudo obtener respuesta del Referee.");
+        return;
+      }
+
+      if (res.transcripcion) {
+        refEstado_.historial.push({ rol: "user", texto: res.transcripcion });
+      }
+      if (res.resumenVoz) {
+        refEstado_.historial.push({ rol: "model", texto: res.resumenVoz });
+      }
+      refEstado_.ultimoTextoVoz = res.resumenVoz || "";
+
+      var sinPen = /sin\s+penal|no\s+hay\s+penal|libre/i.test(res.penalidad || "");
+      var penBg = sinPen ? "rgba(16,185,129,0.22)" : "rgba(245,158,11,0.22)";
+      var penFg = sinPen ? "#6ee7b7" : "#ffd04a";
+      var penBd = sinPen ? "rgba(16,185,129,0.5)" : "rgba(245,158,11,0.5)";
+
+      var pasosHtml = "";
+      if (Array.isArray(res.pasosAlivio) && res.pasosAlivio.length > 0) {
+        pasosHtml = '<div style="margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.1);">' +
+          '<div style="font-size:11px; font-weight:900; color:#94a3b8; letter-spacing:0.6px; text-transform:uppercase; margin-bottom:6px;">Procedimiento</div>' +
+          '<ol style="margin:0 0 0 18px; padding:0; color:#e2e8f0; font-size:13.5px; line-height:1.45;">' +
+          res.pasosAlivio.map(function(p) { return '<li style="margin-bottom:5px;">' + escRefHtml_(p) + '</li>'; }).join("") +
+          '</ol></div>';
+      }
+
+      var notaHtml = res.notaModalidad
+        ? '<div style="margin-top:10px; padding:8px 10px; background:rgba(59,130,246,0.16); border-left:3px solid #60a5fa; border-radius:6px; font-size:12px; color:#bfdbfe; line-height:1.4;">⚖️ ' + escRefHtml_(res.notaModalidad) + '</div>'
+        : "";
+
+      var transHtml = res.transcripcion
+        ? '<div style="font-size:12px; color:#94a3b8; margin-bottom:10px; font-style:italic;">🎤 "' + escRefHtml_(res.transcripcion) + '"</div>'
+        : "";
+
+      var html = '<div class="ref-card">' +
+        transHtml +
+        '<div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">' +
+          '<span style="background:rgba(16,185,129,0.2); color:#6ee7b7; border:1px solid rgba(16,185,129,0.5); border-radius:8px; padding:3px 9px; font-size:11.5px; font-weight:900;">📜 ' + escRefHtml_(res.regla) + '</span>' +
+          '<span style="background:' + penBg + '; color:' + penFg + '; border:1px solid ' + penBd + '; border-radius:8px; padding:3px 9px; font-size:11.5px; font-weight:900;">⛳ ' + escRefHtml_(res.penalidad) + '</span>' +
+        '</div>' +
+        '<div style="font-size:15.5px; font-weight:700; color:#ffffff; line-height:1.48;">' + escRefHtml_(res.resumenVoz) + '</div>' +
+        pasosHtml +
+        notaHtml +
+        '<div style="display:flex; gap:8px; margin-top:14px;">' +
+          '<button type="button" onclick="hablarTextoRefereeWrapper_(refEstado_.ultimoTextoVoz)" style="flex:1; background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.5); color:#6ee7b7; border-radius:10px; padding:9px 10px; font-size:12.5px; font-weight:800; cursor:pointer;">🔊 Repetir voz</button>' +
+          '<button type="button" onclick="cerrarRefereeWrapper_()" style="flex:1; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.22); color:#ffffff; border-radius:10px; padding:9px 10px; font-size:12.5px; font-weight:800; cursor:pointer;">✓ Volver al hoyo</button>' +
+        '</div>' +
+      '</div>';
+
+      var rWrap = document.getElementById("refRespuestaWrap");
+      if (rWrap) rWrap.innerHTML = html;
+
+      var bodyEl = document.getElementById("refBody");
+      if (bodyEl) bodyEl.scrollTop = 0;
+
+      hablarTextoRefereeWrapper_(res.resumenVoz);
+    }
+
+    function mostrarErrorRefereeWrapper_(msg) {
+      var rWrap = document.getElementById("refRespuestaWrap");
+      if (rWrap) {
+        rWrap.innerHTML = '<div class="ref-card" style="border-color:rgba(248,113,113,0.5);">' +
+          '<div style="color:#f87171; font-weight:800; font-size:13.5px; line-height:1.45;">⚠️ ' + escRefHtml_(msg) + '</div>' +
+          '</div>';
+      }
+    }
   </script>
 </body>
 </html>
