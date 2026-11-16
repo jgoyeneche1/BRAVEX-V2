@@ -7,13 +7,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Copa Bravex (V2)</title>
 
+  <!-- Lienzo oscuro inmediato desde el byte 0 para evitar destellos blancos en iOS -->
+  <style id="critical-dark-bg">
+    html, body { background-color: #05150f !important; color: #f1f5f9; margin: 0; padding: 0; }
+  </style>
+
   <!-- PWA Manifest (garantiza background_color oscuro al abrir el icono en iOS y Android) -->
   <link rel="manifest" href="manifest.json" />
-
-  <!-- Control de caché para garantizar siempre la última versión sin destruir el lienzo nativo -->
-  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
+  <meta name="theme-color" content="#05150f" />
 
   <!-- Preconexión a los servidores de Google para acelerar la carga en 500-800ms -->
   <link rel="preconnect" href="https://script.google.com" crossorigin />
@@ -23,7 +24,7 @@
 
   <!-- Configuración PWA / WebClip para iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Bravex V2" />
   <meta name="mobile-web-app-capable" content="yes" />
 
@@ -31,8 +32,31 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="icon" type="image/png" href="apple-touch-icon.png" />
 
-  <!-- Startup image compatible con iOS WebKit (PNG real para neutralizar el fondo blanco nativo) -->
-  <link rel="apple-touch-startup-image" href="apple-touch-icon.png" />
+  <!-- Startup image exacta al tamaño del iPhone para evitar el splash blanco de iOS WebKit -->
+  <script>
+    (function () {
+      try {
+        var dpr = Math.min(window.devicePixelRatio || 2, 3);
+        var w = Math.round((window.screen.width || 390) * dpr);
+        var h = Math.round((window.screen.height || 844) * dpr);
+        var c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        var ctx = c.getContext('2d');
+        if (ctx) {
+          var g = ctx.createRadialGradient(w * 0.5, h * 0.42, 0, w * 0.5, h * 0.42, Math.max(w, h) * 0.72);
+          g.addColorStop(0, '#0c3525');
+          g.addColorStop(1, '#05150f');
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, w, h);
+          var link = document.createElement('link');
+          link.rel = 'apple-touch-startup-image';
+          link.href = c.toDataURL('image/png');
+          document.head.appendChild(link);
+        }
+      } catch (e) {}
+    })();
+  </script>
 
   <style>
     :root {
@@ -483,24 +507,33 @@
       btnIniciar.textContent = "¡Listo!";
       resetearScrollWrapper_();
 
-      // 1. Habilitar interacción con el menú que ya está dibujado debajo
-      frame.classList.add("activo");
-
-      // 2. Desvanecer la pantalla de la bola de golf y la bienvenida hacia el menú principal
-      bienvenida.style.opacity = "0";
-      bgBall.style.opacity = "0";
-
       try {
         if (frame.contentWindow) {
           frame.contentWindow.postMessage({ tipo: "bravex_reset_scroll" }, "*");
         }
       } catch (e) {}
 
-      setTimeout(function () {
-        bienvenida.style.display = "none";
-        bgBall.style.display = "none";
-        resetearScrollWrapper_();
-      }, 400);
+      var aplicarTransicion = function () {
+        // 1. Habilitar el iframe ya pintado debajo
+        frame.classList.add("activo");
+        // 2. Desvanecer suavemente la bola y la bienvenida sin exponer destellos blancos
+        bienvenida.style.opacity = "0";
+        bgBall.style.opacity = "0";
+
+        setTimeout(function () {
+          bienvenida.style.display = "none";
+          bgBall.style.display = "none";
+          resetearScrollWrapper_();
+        }, 420);
+      };
+
+      if (window.requestAnimationFrame) {
+        requestAnimationFrame(function () {
+          requestAnimationFrame(aplicarTransicion);
+        });
+      } else {
+        aplicarTransicion();
+      }
     }
 
     // Al pulsar Iniciar: muestra progresión de estados en el botón sobre la bola y al finalizar abre el menú
@@ -518,17 +551,30 @@
         btnIniciar.textContent = "Abriendo...";
         setTimeout(function () {
           desvanecerYEvevelarMenu();
-        }, 180);
+        }, 140);
         return;
       }
 
-      // Si aún está precargando en segundo plano, animar el botón sobre la bola
+      // Si aún está precargando en segundo plano, mantener la bienvenida oscura cubriendo
+      // por completo el iframe (y la envoltura blanca de Google) hasta recibir bravex_app_lista
       btnIniciar.textContent = "Conectando...";
       setTimeout(function () {
-        if (!transicionEjecutada) {
+        if (!transicionEjecutada && !appListaEnIframe) {
           iniciarAnimacionPuntosMenu_();
         }
       }, 350);
+
+      // Si tras 7.5s aún responde lento el servidor o la red, mantener el mensaje en pantalla
+      // en lugar de descubrir el iframe verde oscuro o el marco blanco de Google
+      setTimeout(function () {
+        if (!transicionEjecutada && !appListaEnIframe) {
+          if (dotsInterval) {
+            clearInterval(dotsInterval);
+            dotsInterval = null;
+          }
+          btnIniciar.textContent = "Sincronizando servidor...";
+        }
+      }, 7500);
 
       // Verificador continuo: tan pronto como el menú esté listo en el iframe, abrir
       var checkInterval = setInterval(function () {
@@ -536,15 +582,15 @@
           clearInterval(checkInterval);
           desvanecerYEvevelarMenu();
         }
-      }, 60);
+      }, 50);
 
-      // Respaldo de seguridad final (solo si falla postMessage o la red es muy lenta)
+      // Respaldo de seguridad final amplio (solo si falla postMessage por completo)
       setTimeout(function () {
         clearInterval(checkInterval);
         if (!transicionEjecutada) {
           desvanecerYEvevelarMenu();
         }
-      }, 7500);
+      }, 25000);
     });
 
     // 🚀 PRECARGA EN SEGUNDO PLANO INMEDIATA:
@@ -552,7 +598,7 @@
     // el iframe ya conecta y compila Google Apps Script por detrás sin hacerle esperar.
     (function precargarAppEnSegundoPlano() {
       var baseUrl = "https://script.google.com/macros/s/AKfycbzgTnFlxzrhvIwxH-_b4EOvdH42-0n2cOnv5mRxMiUtVZwlFt4N_8GPPtyRTRLyCU9j/exec";
-      var vTag = "338_" + Math.floor(Date.now() / 3600000);
+      var vTag = "403_" + Math.floor(Date.now() / 86400000);
       var url = baseUrl + "?inicio=1&_v=" + vTag;
 
       var sesion = leerSesionGuardada_();
