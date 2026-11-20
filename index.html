@@ -225,6 +225,28 @@
       font-weight: 900;
       color: #ffd04a;
       letter-spacing: 0.4px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .ref-crest {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(145deg, #0c3b29 0%, #051b12 100%);
+      border: 1.5px solid #ffd04a;
+      box-shadow: 0 2px 7px rgba(0, 0, 0, 0.5);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .ref-ico {
+      width: 1.15em;
+      height: 1.15em;
+      display: inline-block;
+      vertical-align: -0.18em;
+      flex-shrink: 0;
     }
     .ref-ctx-pill {
       font-size: 11px;
@@ -340,10 +362,15 @@
   <div id="refereeOverlay">
     <div class="ref-header">
       <div style="min-width:0;">
-        <div class="ref-title-main">⚖️ REFEREE R&amp;A / USGA</div>
+        <div class="ref-title-main">
+          <span class="ref-crest" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffd04a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M8 21h8"/><path d="M5 7h14"/><path d="M5 7l-2.5 6a3 3 0 0 0 5 0L5 7z"/><path d="M19 7l-2.5 6a3 3 0 0 0 5 0L19 7z"/></svg>
+          </span>
+          <span>REFEREE R&amp;A / USGA</span>
+        </div>
         <div id="refCtxPill" class="ref-ctx-pill">Consulta Oficial de Reglas</div>
       </div>
-      <button type="button" class="ref-btn-volver" onclick="cerrarRefereeWrapper_()">← Volver</button>
+      <button type="button" class="ref-btn-volver" onclick="cerrarRefereeWrapper_()">Volver</button>
     </div>
 
     <div class="ref-body" id="refBody">
@@ -355,10 +382,10 @@
           El Referee aplicará el <b>Reglamento Oficial R&amp;A / USGA</b> adaptado a tu modalidad en juego y te responderá por voz y texto.
         </div>
         <div class="ref-quick-grid">
-          <button type="button" class="ref-quick-chip" onclick="enviarTextoRefereeWrapper_('Mi bola cayó en área de penalización roja, ¿cómo tomo alivio?')">🔴 Estaca roja</button>
-          <button type="button" class="ref-quick-chip" onclick="enviarTextoRefereeWrapper_('Quiero declarar mi bola injugable, ¿qué opciones tengo?')">🌲 Bola injugable</button>
-          <button type="button" class="ref-quick-chip" onclick="enviarTextoRefereeWrapper_('Mi bola está en camino de grava o aspersor, ¿tengo alivio sin penalidad?')">🛣️ Camino / Aspersor</button>
-          <button type="button" class="ref-quick-chip" onclick="enviarTextoRefereeWrapper_('Se movió mi bola accidentalmente en el green al marcarla')">⛳ Bola movida en green</button>
+          <button type="button" class="ref-quick-chip" onclick="enviarTextoRefereeWrapper_('Mi bola cayó en área de penalización roja, ¿cómo tomo alivio?')" style="display:inline-flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:50%;background:#ef4444;display:inline-block;flex-shrink:0;"></span><span>Estaca roja</span></button>
+          <button type="button" class="ref-quick-chip" onclick="enviarTextoRefereeWrapper_('Quiero declarar mi bola injugable, ¿qué opciones tengo?')" style="display:inline-flex;align-items:center;gap:6px;"><svg class="ref-ico" viewBox="0 0 24 24" fill="none" stroke="#ffd04a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>Bola injugable</span></button>
+          <button type="button" class="ref-quick-chip" onclick="enviarTextoRefereeWrapper_('Mi bola está en camino de grava o aspersor, ¿tengo alivio sin penalidad?')" style="display:inline-flex;align-items:center;gap:6px;"><svg class="ref-ico" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span>Camino / Aspersor</span></button>
+          <button type="button" class="ref-quick-chip" onclick="enviarTextoRefereeWrapper_('Se movió mi bola accidentalmente en el green al marcarla')" style="display:inline-flex;align-items:center;gap:6px;"><svg class="ref-ico" viewBox="0 0 24 24" fill="none" stroke="#ffd04a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 4h11l-2.5 4L15 12H4"/></svg><span>Bola movida en green</span></button>
         </div>
       </div>
       <div id="refRespuestaWrap"></div>
@@ -366,7 +393,7 @@
 
     <div class="ref-footer">
       <button type="button" id="refBtnMic" class="ref-btn-mic" onclick="alternarMicrofonoRefereeWrapper_()">
-        <span id="refBtnMicIcon">🎙️</span>
+        <span id="refBtnMicIcon" style="display:inline-flex;align-items:center;"><svg class="ref-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></span>
         <span id="refBtnMicTxt">Tocar para hablar</span>
       </button>
       <div style="display:flex; gap:8px;">
@@ -686,15 +713,15 @@
       if (refEstado_.ocupado) {
         btn.classList.add("ocupado");
         btn.disabled = true;
-        icn.textContent = "⏳";
+        icn.innerHTML = '<svg class="ref-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>';
         txt.textContent = "Consultando Reglas R&A...";
       } else if (refEstado_.grabando) {
         btn.classList.add("grabando");
-        icn.textContent = "⏹️";
+        icn.innerHTML = '<svg class="ref-ico" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
         var s = refEstado_.segundos;
         txt.textContent = "Grabando (0:" + (s < 10 ? "0" + s : s) + ") · Tocar para enviar";
       } else {
-        icn.textContent = "🎙️";
+        icn.innerHTML = '<svg class="ref-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>';
         txt.textContent = "Tocar para hablar";
       }
     }
@@ -913,7 +940,7 @@
       var rWrap = document.getElementById("refRespuestaWrap");
       if (rWrap) {
         rWrap.innerHTML = '<div class="ref-card" style="text-align:center; padding:22px 14px;">' +
-          '<div style="font-size:26px; margin-bottom:8px;">⚖️</div>' +
+          '<div style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:11px;background:linear-gradient(145deg,#0c3b29,#051b12);border:1.5px solid #ffd04a;margin:0 auto 10px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffd04a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M8 21h8"/><path d="M5 7h14"/><path d="M5 7l-2.5 6a3 3 0 0 0 5 0L5 7z"/><path d="M19 7l-2.5 6a3 3 0 0 0 5 0L19 7z"/></svg></div>' +
           '<div style="font-size:14px; font-weight:800; color:#6ee7b7;">Consultando Reglamento Oficial R&amp;A / USGA...</div>' +
           '</div>';
       }
@@ -984,34 +1011,40 @@
           '</ol></div>';
       }
 
+      var icScales = '<svg class="ref-ico" viewBox="0 0 24 24" fill="none" stroke="#ffd04a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M8 21h8"/><path d="M5 7h14"/><path d="M5 7l-2.5 6a3 3 0 0 0 5 0L5 7z"/><path d="M19 7l-2.5 6a3 3 0 0 0 5 0L19 7z"/></svg>';
+      var icMic = '<svg class="ref-ico" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>';
+      var icDoc = '<svg class="ref-ico" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+      var icFlag = '<svg class="ref-ico" viewBox="0 0 24 24" fill="none" stroke="' + penFg + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 4h11l-2.5 4L15 12H4"/></svg>';
+      var icSpeaker = '<svg class="ref-ico" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
+
       var notaHtml = res.notaModalidad
-        ? '<div style="margin-top:10px; padding:8px 10px; background:rgba(59,130,246,0.16); border-left:3px solid #60a5fa; border-radius:6px; font-size:12px; color:#bfdbfe; line-height:1.4;">⚖️ ' + escRefHtml_(res.notaModalidad) + '</div>'
+        ? '<div style="margin-top:10px; padding:8px 10px; background:rgba(59,130,246,0.16); border-left:3px solid #60a5fa; border-radius:6px; font-size:12px; color:#bfdbfe; line-height:1.4; display:flex; align-items:center; gap:7px;">' + icScales + '<span>' + escRefHtml_(res.notaModalidad) + '</span></div>'
         : "";
 
       var transHtml = res.transcripcion
-        ? '<div style="font-size:12px; color:#94a3b8; margin-bottom:10px; font-style:italic;">🎤 "' + escRefHtml_(res.transcripcion) + '"</div>'
+        ? '<div style="font-size:12px; color:#94a3b8; margin-bottom:10px; font-style:italic; display:flex; align-items:center; gap:6px;">' + icMic + '<span>"' + escRefHtml_(res.transcripcion) + '"</span></div>'
         : "";
 
       var metaParts = [];
       if (res.timingMs) metaParts.push((Number(res.timingMs) / 1000).toFixed(1) + "s");
       if (res.motor) metaParts.push(String(res.motor));
       var metaHtml = metaParts.length
-        ? '<div style="margin-top:8px; font-size:10.5px; color:#64748b; text-align:right;">⚡ ' + escRefHtml_(metaParts.join(" · ")) + '</div>'
+        ? '<div style="margin-top:8px; font-size:10.5px; color:#64748b; text-align:right;">' + escRefHtml_(metaParts.join(" · ")) + '</div>'
         : "";
 
       var html = '<div class="ref-card">' +
         transHtml +
         '<div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">' +
-          '<span style="background:rgba(16,185,129,0.2); color:#6ee7b7; border:1px solid rgba(16,185,129,0.5); border-radius:8px; padding:3px 9px; font-size:11.5px; font-weight:900;">📜 ' + escRefHtml_(res.regla) + '</span>' +
-          '<span style="background:' + penBg + '; color:' + penFg + '; border:1px solid ' + penBd + '; border-radius:8px; padding:3px 9px; font-size:11.5px; font-weight:900;">⛳ ' + escRefHtml_(res.penalidad) + '</span>' +
+          '<span style="background:rgba(16,185,129,0.2); color:#6ee7b7; border:1px solid rgba(16,185,129,0.5); border-radius:8px; padding:3px 9px; font-size:11.5px; font-weight:900; display:inline-flex; align-items:center; gap:5px;">' + icDoc + '<span>' + escRefHtml_(res.regla) + '</span></span>' +
+          '<span style="background:' + penBg + '; color:' + penFg + '; border:1px solid ' + penBd + '; border-radius:8px; padding:3px 9px; font-size:11.5px; font-weight:900; display:inline-flex; align-items:center; gap:5px;">' + icFlag + '<span>' + escRefHtml_(res.penalidad) + '</span></span>' +
         '</div>' +
         '<div style="font-size:15.5px; font-weight:700; color:#ffffff; line-height:1.48;">' + escRefHtml_(res.resumenVoz) + '</div>' +
         pasosHtml +
         notaHtml +
         metaHtml +
         '<div style="display:flex; gap:8px; margin-top:14px;">' +
-          '<button type="button" onclick="hablarTextoRefereeWrapper_(refEstado_.ultimoTextoVoz)" style="flex:1; background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.5); color:#6ee7b7; border-radius:10px; padding:9px 10px; font-size:12.5px; font-weight:800; cursor:pointer;">🔊 Repetir voz</button>' +
-          '<button type="button" onclick="cerrarRefereeWrapper_()" style="flex:1; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.22); color:#ffffff; border-radius:10px; padding:9px 10px; font-size:12.5px; font-weight:800; cursor:pointer;">✓ Volver al hoyo</button>' +
+          '<button type="button" onclick="hablarTextoRefereeWrapper_(refEstado_.ultimoTextoVoz)" style="flex:1; background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.5); color:#6ee7b7; border-radius:10px; padding:9px 10px; font-size:12.5px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px;">' + icSpeaker + '<span>Repetir voz</span></button>' +
+          '<button type="button" onclick="cerrarRefereeWrapper_()" style="flex:1; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.22); color:#ffffff; border-radius:10px; padding:9px 10px; font-size:12.5px; font-weight:800; cursor:pointer;">Volver al hoyo</button>' +
         '</div>' +
       '</div>';
 
@@ -1028,7 +1061,7 @@
       var rWrap = document.getElementById("refRespuestaWrap");
       if (rWrap) {
         rWrap.innerHTML = '<div class="ref-card" style="border-color:rgba(248,113,113,0.5);">' +
-          '<div style="color:#f87171; font-weight:800; font-size:13.5px; line-height:1.45;">⚠️ ' + escRefHtml_(msg) + '</div>' +
+          '<div style="color:#f87171; font-weight:800; font-size:13.5px; line-height:1.45; display:flex; align-items:center; gap:7px;"><svg class="ref-ico" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>' + escRefHtml_(msg) + '</span></div>' +
           '</div>';
       }
     }
