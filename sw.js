@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bravex-v2-shell-v1';
+const CACHE_NAME = 'bravex-v2-shell-v2';
 const SHELL_ASSETS = [
   './',
   './index.html',
@@ -28,8 +28,24 @@ self.addEventListener('fetch', (event) => {
   // Solo cachear el cascarón estático del mismo origen; nunca interceptar Google Apps Script.
   if (url.origin !== self.location.origin) return;
 
+  const isHtmlNav = req.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('.html');
+
   event.respondWith(
     caches.open(CACHE_NAME).then(async (cache) => {
+      if (isHtmlNav) {
+        // Network-first para index.html para tomar cambios de GitHub de inmediato
+        try {
+          const networkRes = await fetch(req, { cache: 'no-store' });
+          if (networkRes && networkRes.ok) {
+            cache.put(req, networkRes.clone()).catch(() => {});
+          }
+          return networkRes;
+        } catch (e) {
+          const cachedHtml = await cache.match(req, { ignoreSearch: true });
+          return cachedHtml || Response.error();
+        }
+      }
+
       const cached = await cache.match(req, { ignoreSearch: true });
       const fetchPromise = fetch(req).then((networkRes) => {
         if (networkRes && networkRes.ok) {
